@@ -1,0 +1,17 @@
+build/CMU462/deps/glfw/src
+CMU462/deps/freetype/include
+CMU462/deps/freetype/include/freetype
+CMU462/deps/freetype/include/freetype/config
+CMU462/deps/glew/include/GL
+CMU462/deps/glfw/deps
+CMU462/deps/glfw/deps/glad
+CMU462/deps/glfw/deps/KHR
+CMU462/deps/glfw/deps/mingw
+CMU462/deps/glfw/deps/vulkan
+CMU462/deps/glfw/include/GLFW
+CMU462/deps/glfw/src
+CMU462/include/CMU462
+CMU462/include/GL
+CMU462/include/GLFW
+src
+src/dirent
