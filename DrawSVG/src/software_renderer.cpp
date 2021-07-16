@@ -48,8 +48,8 @@ void SoftwareRendererImp::set_sample_rate( size_t sample_rate ) {
     this->sample_buffer_w = this->target_w*sample_rate;
     this->sample_buffer_h = this->target_h*sample_rate;
     sample_buffer.resize(4 * sample_buffer_w * sample_buffer_h);
-    memset(&sample_buffer[0], 0, 4 * sample_buffer_w * sample_buffer_h);
-
+    memset(&sample_buffer[0], 0.0, 4 * sample_buffer_w * sample_buffer_h);
+    cout<<"reset"<<endl;
 }
 
 void SoftwareRendererImp::set_render_target( unsigned char* render_target,
@@ -354,21 +354,22 @@ void SoftwareRendererImp::rasterize_triangle( float x0, float y0,
                                               Color color ) {
     // Task 3:
     // Implement triangle rasterization
-    float sample_step = 1.0/(float)sample_rate;
+    float sample_step = 1.0/ static_cast<float>(sample_rate);
 
     float x_start = floor(min({x0, x1, x2})-1)+sample_step/2;
     float y_start_mark = floor(min({y0, y1, y2})-1)+sample_step/2;
     float x_end = floor(max({x0, x1, x2})+1)+sample_step/2;
     float y_end = floor(max({y0, y1, y2})+1)+sample_step/2;
+    float y_start;
     if (x_start<sample_step/2) x_start=sample_step/2;
     if (x_end>target_w) x_end=target_w;
     if (y_start_mark<sample_step/2) y_start_mark=sample_step/2;
     if (y_end>target_h) y_end=target_h;
-    while (x_start<=x_end) {
-        float y_start=y_start_mark;
-        while (y_start<=y_end) {
+    while (x_start<x_end) {
+        y_start=y_start_mark;
+        while (y_start<y_end) {
             if (point_in_triangle(x_start, y_start, x0, y0, x1, y1, x2, y2)) {
-                rasterize_point(x_start, y_start, color);
+//                rasterize_point(x_start, y_start, color);
                 fill_sample(x_start, y_start, color);
             }
             y_start+=sample_step;
@@ -377,16 +378,26 @@ void SoftwareRendererImp::rasterize_triangle( float x0, float y0,
     }
 }
 
-void SoftwareRendererImp::fill_sample( int x, int y, const Color& color ) {
+void SoftwareRendererImp::fill_sample( float x, float y, const Color& color ) {
     // fill in the nearest pixel
-    int sx = static_cast<int> (x*sample_rate-0.5);
-    int sy = static_cast<int> (y*sample_rate-0.5);
+    float sx1 = round(x*sample_rate-0.5);
+    float sy2 = round(y*sample_rate-0.5);
+    int sx = static_cast<int> (sx1);
+    int sy = static_cast<int> (sy2);
+
+    printf("sample %f %f %d %d %f %f\n", x, y, sx, sy, y*sample_rate-0.5, sy2);
 
     // check bounds
     if ( sx < 0 || sx >= sample_buffer_w ) return;
     if ( sy < 0 || sy >= sample_buffer_h ) return;
 
     // fill sample - NOT doing alpha blending!
+    printf("%f\n", sample_buffer[4 * (sx + sy * sample_buffer_w)    ]);
+    assert(sample_buffer[4 * (sx + sy * sample_buffer_w)    ]-0.0 < 0.0001);
+    assert(sample_buffer[4 * (sx + sy * sample_buffer_w) + 1]-0.0 < 0.0001);
+    assert(sample_buffer[4 * (sx + sy * sample_buffer_w) + 2]-0.0 < 0.0001);
+    assert(sample_buffer[4 * (sx + sy * sample_buffer_w) + 3]-0.0 < 0.0001);
+
     sample_buffer[4 * (sx + sy * sample_buffer_w)    ] = color.r;
     sample_buffer[4 * (sx + sy * sample_buffer_w) + 1] = color.g;
     sample_buffer[4 * (sx + sy * sample_buffer_w) + 2] = color.b;
@@ -408,14 +419,16 @@ void SoftwareRendererImp::fill_pixel(int x, int y) {
     float y_start_mark = static_cast<float>(y+sample_step/2);
     float y_start;
     float y_end = static_cast<float>(y+1);
-    int sx;
-    int sy;
+    int sx, sy;
+    float sx1, sy1;
 
     while (x_start<x_end) {
         y_start=y_start_mark;
         while (y_start<y_end) {
-            sx = static_cast<int> (x_start*sample_rate-0.5);
-            sy = static_cast<int> (y_start*sample_rate-0.5);
+            sx1 = round(x*sample_rate-0.5);
+            sy1 = round(y*sample_rate-0.5);
+            sx = static_cast<int> (sx1);
+            sy = static_cast<int> (sy1);
             if ( sx < 0 || sx >= sample_buffer_w ) continue;
             if ( sy < 0 || sy >= sample_buffer_h ) continue;
             r_all += sample_buffer[4 * (sx + sy * sample_buffer_w)    ];
@@ -431,10 +444,10 @@ void SoftwareRendererImp::fill_pixel(int x, int y) {
         if (r_all > 0 || g_all > 0 || b_all > 0) {
             printf("%f %f %f %f %f \n", r_all/counter, g_all/counter, b_all/counter, a_all/counter, counter);
         }
-        render_target[4 * (x + y * target_w)    ] = (uint8_t) (r_all/counter*255);
-        render_target[4 * (x + y * target_w) + 1] = (uint8_t) (g_all/counter*255);
-        render_target[4 * (x + y * target_w) + 2] = (uint8_t) (b_all/counter*255);
-        render_target[4 * (x + y * target_w) + 3] = (uint8_t) (a_all/counter*255);
+        render_target[4 * (x + y * target_w)    ] = (uint8_t) (r_all/a_all*255);
+        render_target[4 * (x + y * target_w) + 1] = (uint8_t) (g_all/a_all*255);
+        render_target[4 * (x + y * target_w) + 2] = (uint8_t) (b_all/a_all*255);
+        render_target[4 * (x + y * target_w) + 3] = (uint8_t) (a_all/a_all*255);
     }
 }
 

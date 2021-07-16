@@ -7,13 +7,15 @@
 #include "CMU462.h"
 #include "texture.h"
 #include "svg_renderer.h"
+#include <cassert>
+
 
 namespace CMU462 { // CMU462
 
 class SoftwareRenderer : public SVGRenderer {
  public:
 
-  SoftwareRenderer( ) : sample_rate (4) { }
+  SoftwareRenderer( ) : sample_rate (3) { }
 
   // Free used resources
   virtual ~SoftwareRenderer( ) { }
@@ -81,7 +83,7 @@ class SoftwareRendererImp : public SoftwareRenderer {
  private:
   std::vector<float> sample_buffer;
   int sample_buffer_w; int sample_buffer_h;
-  void fill_sample( int sx, int sy, const Color& c );
+  void fill_sample( float sx, float sy, const Color& c );
   void fill_pixel( int x, int y );
 
 
