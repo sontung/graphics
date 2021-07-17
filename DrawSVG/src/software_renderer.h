@@ -82,6 +82,8 @@ class SoftwareRendererImp : public SoftwareRenderer {
 
  private:
   std::vector<float> sample_buffer;
+  std::vector<int> counting_buffer;
+
   int sample_buffer_w; int sample_buffer_h;
   void fill_sample( float sx, float sy, const Color& c );
   void fill_pixel( int x, int y );
