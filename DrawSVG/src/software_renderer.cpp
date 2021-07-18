@@ -408,10 +408,11 @@ void SoftwareRendererImp::fill_pixel(int x, int y) {
 
     if (weight > 0) {
         float full = static_cast<float>(sample_rate*sample_rate);
-        render_target[4 * (x + y * target_w)    ] = (uint8_t) (r_old*weight/full);
-        render_target[4 * (x + y * target_w) + 1] = (uint8_t) (g_old*weight/full);
-        render_target[4 * (x + y * target_w) + 2] = (uint8_t) (b_old*weight/full);
-        render_target[4 * (x + y * target_w) + 3] = (uint8_t) (a_old*weight/full);
+		float modifier = (1-0.0)*(weight-0)/(full-0)+0.0;
+        render_target[4 * (x + y * target_w)    ] = (uint8_t) (r_old);
+        render_target[4 * (x + y * target_w) + 1] = (uint8_t) (g_old);
+        render_target[4 * (x + y * target_w) + 2] = (uint8_t) (b_old);
+        render_target[4 * (x + y * target_w) + 3] = (uint8_t) (a_old*modifier);
     }
     return;
 }
